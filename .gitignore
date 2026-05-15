@@ -3,3 +3,6 @@ node_modules/
 *.sqlite
 .env
 .DS_Store
+
+.kraft-logs/
+*.log
