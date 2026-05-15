@@ -30,6 +30,16 @@ async function initDatabase() {
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    db.run(`
+      CREATE TABLE IF NOT EXISTS vendor_notifications (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        vendor_id TEXT NOT NULL,
+        message TEXT NOT NULL,
+        type TEXT NOT NULL,
+        read INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
     saveDatabase();
   }
   
