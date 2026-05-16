@@ -1,10 +1,5 @@
 # 🏪 Projet Microservices — Système de Gestion de Boutique Multi-Vendeurs
 
-> **Cours** : SoA et Microservices — Dr. Salah Gontara | **A.U.** : 2025-26  
-> **Technologie** : Node.js | **Type** : Mini-projet Binôme/Trinôme
-
----
-
 ## 1. Description du sujet
 
 ### 🎯 Concept général
@@ -591,21 +586,3 @@ cd api-gateway && node src/index.js
 # REST : http://localhost:3000/api/...
 # GraphQL : http://localhost:3000/graphql
 ```
-
----
-
-## 10. Barème et points couverts
-
-| Critère | Points | Couverture dans ce projet |
-|---|---|---|
-| **gRPC** | 5 pts | ✅ 3 fichiers .proto, 3 serveurs gRPC, appels depuis la Gateway |
-| **REST** | 3 pts | ✅ 12 endpoints REST couvrant toutes les opérations CRUD |
-| **GraphQL** | 3 pts | ✅ Schéma complet avec Queries et Mutations |
-| **Kafka** | 3 pts | ✅ 4 topics, producteurs et consommateurs dans chaque service |
-| **Qualité globale** | 2 pts | ✅ Architecture claire, code organisé, scénario démontrable |
-| **Originalité & GitHub** | 4 pts | ✅ Sujet riche, collaboration GitHub avec branches et commits |
-| **Total** | **20 pts** | — |
-
----
-
-*Document rédigé dans le cadre du Mini-projet Microservices — SoA et Microservices, A.U. 2025-26*
