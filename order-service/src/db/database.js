@@ -1,60 +1,46 @@
-const initSqlJs = require('sql.js');
-const path = require('path');
-const fs = require('fs');
+const { createRxDatabase, addRxPlugin } = require('rxdb');
+const { getRxStorageMemory } = require('rxdb/plugins/storage-memory');
+const { RxDBJsonDumpPlugin } = require('rxdb/plugins/json-dump');
 
-const dbPath = path.join(__dirname, '../../data/orders.db');
-const dataDir = path.dirname(dbPath);
+addRxPlugin(RxDBJsonDumpPlugin);
 
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
+const orderSchema = {
+  version: 0,
+  primaryKey: 'id',
+  type: 'object',
+  properties: {
+    id:          { type: 'string', maxLength: 100 },
+    customer_id: { type: 'string' },
+    product_id:  { type: 'string' },
+    vendor_id:   { type: 'string' },
+    quantity:    { type: 'number' },
+    total_price: { type: 'number' },
+    status:      { type: 'string' },
+    created_at:  { type: 'string' }
+  },
+  required: ['id', 'customer_id', 'product_id', 'vendor_id', 'quantity', 'total_price', 'status', 'created_at']
+};
 
 let db = null;
+let ordersCollection = null;
 
 async function initDatabase() {
-  const SQL = await initSqlJs();
-  
-  if (fs.existsSync(dbPath)) {
-    const buffer = fs.readFileSync(dbPath);
-    db = new SQL.Database(buffer);
-  } else {
-    db = new SQL.Database();
-    db.run(`
-      CREATE TABLE IF NOT EXISTS orders (
-        id TEXT PRIMARY KEY,
-        customer_id TEXT NOT NULL,
-        product_id TEXT NOT NULL,
-        vendor_id TEXT NOT NULL,
-        quantity INTEGER NOT NULL,
-        total_price REAL NOT NULL,
-        status TEXT NOT NULL DEFAULT 'pending',
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    saveDatabase();
-  }
-  
+  db = await createRxDatabase({
+    name: 'ordersdb',
+    storage: getRxStorageMemory()
+  });
+
+  await db.addCollections({
+    orders: { schema: orderSchema }
+  });
+
+  ordersCollection = db.orders;
+  console.log('RxDB order database initialized');
   return db;
 }
 
-function getDatabase() {
-  return db;
+function getCollection() {
+  return ordersCollection;
 }
 
-function saveDatabase() {
-  if (db) {
-    const data = db.export();
-    const buffer = Buffer.from(data);
-    fs.writeFileSync(dbPath, buffer);
-  }
-}
-
-function closeDatabase() {
-  if (db) {
-    saveDatabase();
-    db.close();
-    db = null;
-  }
-}
-
-module.exports = { initDatabase, getDatabase, saveDatabase, closeDatabase };
+module.exports = { initDatabase, getCollection };
