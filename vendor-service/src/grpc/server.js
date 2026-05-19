@@ -6,7 +6,7 @@ const vendorModel = require('../models/vendor');
 const PROTO_PATH = path.join(__dirname, '../../../proto/vendor.proto');
 
 const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
-  keepCase: false,
+  keepCase: true,
   longs: String,
   enums: String,
   defaults: true,
@@ -19,6 +19,7 @@ const vendorService = {
   registerVendor: async (call, callback) => {
     try {
       const { name, email, password, shop_name, shop_description } = call.request;
+      console.log('registerVendor called with:', { name, email, shop_name });
       if (!name || !email || !password || !shop_name) {
         return callback({ code: grpc.status.INVALID_ARGUMENT, message: 'name, email, password and shop_name are required' });
       }
