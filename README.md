@@ -598,7 +598,6 @@ cd api-gateway && node src/index.js
 | @grpc/grpc-js | ✅ | ✅ | ✅ | ✅ |
 | @grpc/proto-loader | ✅ | ✅ | ✅ | ✅ |
 | kafkajs | ❌ | ✅ | ✅ | ✅ |
-| better-sqlite3 | ❌ | ✅ | ✅ | ❌ |
+| sql.js | ❌ | ✅ | ✅ | ❌ |
 | rxdb | ❌ | ❌ | ❌ | ✅ |
 
-> Note: some native packages (e.g. `better-sqlite3`) may require native build tools on Windows (Visual Studio C++ workload). If installation fails, install the required build tools or consider using an alternative package.

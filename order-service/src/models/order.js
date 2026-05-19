@@ -1,71 +1,49 @@
-const { getDatabase, saveDatabase } = require('../db/database');
+const { getCollection } = require('../db/database');
 
 function generateId() {
   return 'order_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 }
 
-function createOrder(customerId, productId, vendorId, quantity, totalPrice) {
-  const db = getDatabase();
+async function createOrder(customerId, productId, vendorId, quantity, totalPrice) {
+  const collection = getCollection();
   const id = generateId();
   const createdAt = new Date().toISOString();
 
-  db.run(
-    'INSERT INTO orders (id, customer_id, product_id, vendor_id, quantity, total_price, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-    [id, customerId, productId, vendorId, quantity, totalPrice, 'pending', createdAt]
-  );
-  saveDatabase();
+  const doc = {
+    id,
+    customer_id: customerId,
+    product_id:  productId,
+    vendor_id:   vendorId,
+    quantity,
+    total_price: totalPrice,
+    status:      'pending',
+    created_at:  createdAt
+  };
 
-  return { id, customer_id: customerId, product_id: productId, vendor_id: vendorId, quantity, total_price: totalPrice, status: 'pending', created_at: createdAt };
+  await collection.insert(doc);
+  return doc;
 }
 
-function getOrderById(id) {
-  const db = getDatabase();
-  const result = db.exec('SELECT * FROM orders WHERE id = ?', [id]);
-  
-  if (result.length === 0 || result[0].values.length === 0) {
-    return null;
-  }
-
-  const row = result[0].values[0];
-  const columns = result[0].columns;
-  const order = {};
-  columns.forEach((col, i) => {
-    order[col] = row[i];
-  });
-
-  return order;
+async function getOrderById(id) {
+  const collection = getCollection();
+  const doc = await collection.findOne(id).exec();
+  return doc ? doc.toJSON() : null;
 }
 
-function getOrdersByCustomer(customerId) {
-  const db = getDatabase();
-  const result = db.exec('SELECT * FROM orders WHERE customer_id = ?', [customerId]);
-
-  if (result.length === 0) {
-    return [];
-  }
-
-  const columns = result[0].columns;
-  return result[0].values.map(row => {
-    const order = {};
-    columns.forEach((col, i) => {
-      order[col] = row[i];
-    });
-    return order;
-  });
+async function getOrdersByCustomer(customerId) {
+  const collection = getCollection();
+  const docs = await collection.find({
+    selector: { customer_id: customerId }
+  }).exec();
+  return docs.map(d => d.toJSON());
 }
 
-function updateOrderStatus(orderId, status) {
-  const db = getDatabase();
-  const order = getOrderById(orderId);
-  
-  if (!order) {
-    return null;
-  }
-
-  db.run('UPDATE orders SET status = ? WHERE id = ?', [status, orderId]);
-  saveDatabase();
-
-  return getOrderById(orderId);
+async function updateOrderStatus(orderId, status) {
+  const collection = getCollection();
+  const doc = await collection.findOne(orderId).exec();
+  if (!doc) return null;
+  await doc.patch({ status });
+  return doc.toJSON();
 }
 
 module.exports = { createOrder, getOrderById, getOrdersByCustomer, updateOrderStatus };
