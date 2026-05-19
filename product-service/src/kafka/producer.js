@@ -2,7 +2,7 @@ const { Kafka } = require('kafkajs');
 
 const kafka = new Kafka({
   clientId: 'product-service-producer',
-  brokers: ['localhost:9092']
+  brokers: [process.env.KAFKA_BROKER || 'localhost:9092']
 });
 
 const producer = kafka.producer();
@@ -12,28 +12,48 @@ const connectProducer = async () => {
   console.log('Product Service Kafka producer connected');
 };
 
-const publishStockLow = async (productData) => {
+const publishStockUpdated = async ({ productId, orderId, previousStock, newStock }) => {
   await producer.send({
-    topic: 'stock.low',
+    topic: 'stock.updated',
     messages: [
       {
-        key: productData.productId,
+        key: orderId,
         value: JSON.stringify({
-          eventType: 'STOCK_LOW',
-          productId: productData.productId,
-          vendorId: productData.vendorId,
-          productName: productData.productName,
-          remainingStock: productData.remainingStock,
-          timestamp: new Date().toISOString()
+          eventType:     'STOCK_UPDATED',
+          productId,
+          orderId,
+          previousStock,
+          newStock,
+          timestamp:     new Date().toISOString()
         })
       }
     ]
   });
-  console.log(`Event STOCK_LOW published for product ${productData.productId}`);
+  console.log(`Event STOCK_UPDATED published for order ${orderId}`);
+};
+
+const publishStockLow = async ({ productId, vendorId, productName, remainingStock }) => {
+  await producer.send({
+    topic: 'stock.low',
+    messages: [
+      {
+        key: productId,
+        value: JSON.stringify({
+          eventType:      'STOCK_LOW',
+          productId,
+          vendorId,
+          productName,
+          remainingStock,
+          timestamp:      new Date().toISOString()
+        })
+      }
+    ]
+  });
+  console.log(`Event STOCK_LOW published for product ${productId}`);
 };
 
 const disconnectProducer = async () => {
   await producer.disconnect();
 };
 
-module.exports = { connectProducer, publishStockLow, disconnectProducer };
+module.exports = { connectProducer, publishStockUpdated, publishStockLow, disconnectProducer };

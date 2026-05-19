@@ -5,7 +5,7 @@ const path = require('path');
 const PROTO_PATH = path.join(__dirname, '../../../proto/product.proto');
 
 const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
-  keepCase: false,
+  keepCase: true,
   longs: String,
   enums: String,
   defaults: true,
