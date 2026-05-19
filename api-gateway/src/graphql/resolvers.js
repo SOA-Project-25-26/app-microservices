@@ -33,6 +33,7 @@ const resolvers = {
       return await orderClient.getOrder(id);
     }
   },
+
   Mutation: {
     createVendor: async (_, { input }) => {
       const { name, email, password, shop_name, shop_description } = input;
@@ -47,7 +48,7 @@ const resolvers = {
       return await productClient.createProduct(vendor_id, name, description, price, stock, category);
     },
     updateProductStock: async (_, { id, quantity }) => {
-      const result = await productClient.updateStock(id, quantity);
+      await productClient.updateStock(id, quantity);
       return await productClient.getProduct(id);
     },
     deleteProduct: async (_, { id }) => {
@@ -59,6 +60,29 @@ const resolvers = {
     },
     updateOrderStatus: async (_, { id, status }) => {
       return await orderClient.updateOrderStatus(id, status);
+    }
+  },
+
+  // Nested resolver: Vendor.products
+  Vendor: {
+    products: async (parent) => {
+      try {
+        const result = await productClient.getProductsByVendor(parent.id);
+        return result.products;
+      } catch (err) {
+        return [];
+      }
+    }
+  },
+
+  // Nested resolver: Product.vendor
+  Product: {
+    vendor: async (parent) => {
+      try {
+        return await vendorClient.getVendor(parent.vendor_id);
+      } catch (err) {
+        return null;
+      }
     }
   }
 };

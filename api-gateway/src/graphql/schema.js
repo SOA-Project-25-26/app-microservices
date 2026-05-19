@@ -7,6 +7,7 @@ const typeDefs = gql`
     email: String!
     shop_name: String!
     shop_description: String
+    products: [Product]
   }
 
   type Product {
@@ -17,11 +18,12 @@ const typeDefs = gql`
     price: Float!
     stock: Int!
     category: String
+    vendor: Vendor
   }
 
   type Order {
     id: ID!
-    customer_id: String!
+    customer_id: String!\
     product_id: String!
     vendor_id: String!
     quantity: Int!

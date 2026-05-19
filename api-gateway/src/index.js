@@ -1,7 +1,7 @@
 const express = require('express');
 const { ApolloServer } = require('@apollo/server');
 const { expressMiddleware } = require('@apollo/server/express4');
-const bodyParser = require('body-parser');
+const cors = require('cors');
 
 const typeDefs = require('./graphql/schema');
 const resolvers = require('./graphql/resolvers');
@@ -14,24 +14,21 @@ const PORT = process.env.PORT || 3000;
 async function startServer() {
   const app = express();
 
-  const server = new ApolloServer({
-    typeDefs,
-    resolvers
-  });
+  // Global middleware — must be before all routes including Apollo
+  app.use(cors());
+  app.use(express.json());
 
-  await server.start();
-
-  app.use(bodyParser.json());
-
+  // REST routes
   app.use('/api', vendorRoutes);
   app.use('/api', productRoutes);
   app.use('/api', orderRoutes);
 
-  app.use('/graphql', express.json(), expressMiddleware(server));
+  // GraphQL
+  const apolloServer = new ApolloServer({ typeDefs, resolvers });
+  await apolloServer.start();
+  app.use('/graphql', expressMiddleware(apolloServer));
 
-  app.get('/health', (req, res) => {
-    res.json({ status: 'ok' });
-  });
+  app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
   app.listen(PORT, () => {
     console.log(`API Gateway running on port ${PORT}`);

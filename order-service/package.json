@@ -12,7 +12,9 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.14.3",
     "@grpc/proto-loader": "^0.8.1",
+    "bcryptjs": "^3.0.3",
     "kafkajs": "^2.2.4",
+    "lokijs": "^1.5.12",
     "rxdb": "^17.2.0",
     "sql.js": "^1.14.1"
   }

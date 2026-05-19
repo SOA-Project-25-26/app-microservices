@@ -8,10 +8,10 @@ const PROTO_PATH = path.join(__dirname, '../../../proto/order.proto');
 const PRODUCT_PROTO_PATH = path.join(__dirname, '../../../proto/product.proto');
 
 const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
-  keepCase: false, longs: String, enums: String, defaults: true, oneofs: true
+  keepCase: true, longs: String, enums: String, defaults: true, oneofs: true
 });
 const productPackageDef = protoLoader.loadSync(PRODUCT_PROTO_PATH, {
-  keepCase: false, longs: String, enums: String, defaults: true, oneofs: true
+  keepCase: true, longs: String, enums: String, defaults: true, oneofs: true
 });
 
 const proto = grpc.loadPackageDefinition(packageDefinition);
@@ -38,7 +38,6 @@ const orderService = {
     try {
       const { customer_id, product_id, vendor_id, quantity } = call.request;
 
-      // Validate inputs
       if (!customer_id || !product_id || !vendor_id) {
         return callback({ code: grpc.status.INVALID_ARGUMENT, message: 'customer_id, product_id and vendor_id are required' });
       }
@@ -46,7 +45,6 @@ const orderService = {
         return callback({ code: grpc.status.INVALID_ARGUMENT, message: 'quantity must be greater than 0' });
       }
 
-      // Fetch product to get price and check stock
       let product;
       try {
         product = await getProduct(product_id);
@@ -59,10 +57,8 @@ const orderService = {
       }
 
       const totalPrice = parseFloat((product.price * quantity).toFixed(2));
-
       const order = await orderModel.createOrder(customer_id, product_id, vendor_id, quantity, totalPrice);
 
-      // Publish Kafka event
       await publishOrderCreated({
         orderId:    order.id,
         customerId: customer_id,
